@@ -51,7 +51,10 @@ io.on("connection", function (socket) {
     });
     socket.on("requestData", (msg) => {
         //io.emit("toUno", "{\"currentMod\":\"requestData\"}");
-        io.emit("espMessage",data);
+        if(data != null){
+              io.emit("espMessage",data);
+        }
+      
     })
     socket.on("test", (msg) => {
         // console.log(msg);
