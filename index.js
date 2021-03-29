@@ -1,9 +1,11 @@
 var port = process.env.PORT || 3000;
-const io = require('socket.io')(port);
 
-console.log(port);
+const io = require('socket.io')(port);
+var ib = 0;
+
 const pass = "test123";
 var data;
+io.setMaxListeners(0);
 io.on("connection", function (socket) {
     console.log("A user cxonnected");
     console.log(socket.id);
@@ -16,11 +18,26 @@ io.on("connection", function (socket) {
             io.emit("returnPass", "false");
         }
     });
+    socket.on("loginServerFinger", (msg) => {
+
+        if (msg == pass) {
+            io.emit("returnPass", "true");
+
+        } else {
+            io.emit("returnPass", "false");
+        }
+
+
+    });
+
+
+
     io.emit("serverAccepted", "true");
     socket.on("chipMessage", (msg) => {
+        console.log(msg);
         if (msg != null) {
             data = msg;
-            console.log(JSON.stringify(msg));
+
             if (msg.hasOwnProperty("fingerId")) {
                 console.log("FingerId:" + msg.fingerId);
             }
@@ -49,19 +66,30 @@ io.on("connection", function (socket) {
             io.emit("espMessage", msg);
         }
     });
+    socket.on("btnClickedFinger", (msg) => {
+        console.log("btnClickedFinger")
+        io.emit("addFingerBtnClick", "");
+    })
     socket.on("requestData", (msg) => {
         //io.emit("toUno", "{\"currentMod\":\"requestData\"}");
-        if(data != null){
-              io.emit("espMessage",data);
+        if (data != null) {
+            io.emit("espMessage", data);
         }
-      
-    })
-    socket.on("test", (msg) => {
-        // console.log(msg);
     });
 
-    socket.on("disconnect", () => {
-        console.log("A user disconnected");
+    socket.on("opendoor",(msg)=>{
+        if(msg == "d667djkjd"){
+            io.emit("toUno", "{\"currentMod\":\"openDoor\"}");
+        }
     })
-})
 
+    function requestData() {
+        io.emit("toUno", "{\"currentMod\":\"requestData\"}");
+        setTimeout(requestData,1800000);
+    }
+    if(ib == 0){
+        requestData();
+        ib++;
+    }
+    
+})
